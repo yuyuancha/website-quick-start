@@ -1,0 +1,43 @@
+version: "3.5"
+services:
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - ${DOCKER_FRONTEND_PORT}:8080
+        volumes:
+            - ./frontend:/app
+    backend:
+        image: golang:1.20.3
+        ports:
+            - ${DOCKER_BACKEND_PORT}:8000
+        volumes:
+            - ./backend:/go/src/app
+            - ./data/go/pkg/mod:/go/pkg/mod
+            - ./data/go/bin:/go/bin
+        environment:
+            - GO111MODULE=on
+        working_dir: /go/src/app
+        tty: true
+        depends_on:
+            - mysql
+            - redis
+    redis:
+        image: redis:latest
+        restart: always
+        ports:
+            - ${DOCKER_REDIS_PORT}:6379
+        command: --requirepass "${DOCKER_REDIS_PASSWORD}"
+        volumes:
+            - ./data/redis:/data
+    mysql:
+        image: mysql:8.0
+        restart: always
+        ports:
+            - ${DOCKER_MYSQL_PORT}:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DOCKER_MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${DOCKER_MYSQL_DATABASE}
+        volumes:
+            - ./data/mysql:/data
