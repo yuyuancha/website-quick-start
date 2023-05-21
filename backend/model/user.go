@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/yuyuancha/website-quick-start/driver"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/yuyuancha/website-quick-start/util"
 )
 
 // User 會員結構
 type User struct {
 	Id        int       `gorm:"primaryKey" json:"id"`
 	Username  string    `json:"username"`
-	Nickname  string    `json:"nickname`
+	Nickname  string    `json:"nickname"`
 	Password  string    `json:"password"`
 	Email     *string   `json:"email"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -25,12 +25,12 @@ func (*User) TableName() string {
 
 // Create 建立會員資料
 func (u *User) Create() (*User, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hash, err := util.GeneratePasswordHash(u.Password)
 	if err != nil {
 		return nil, errors.New("密碼加密發生錯誤")
 	}
 
-	u.Password = string(hash)
+	u.Password = hash
 
 	err = driver.MySql.Create(u).Error
 	if err != nil {
