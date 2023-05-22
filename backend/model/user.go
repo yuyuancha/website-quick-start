@@ -24,19 +24,23 @@ func (*User) TableName() string {
 }
 
 // IsExist 檢查會員是否存在
-func (u *User) IsExist() bool {
+func (u *User) IsExist() (bool, error) {
 	var count int64
-	driver.MySql.Table(u.TableName()).Where("username", u.Username).Count(&count)
+	err := driver.MySql.Table(u.TableName()).
+		Where("username", u.Username).
+		Count(&count).Error
 
-	return count != 0
+	return count != 0, err
 }
 
 // IsNicknameUsed 檢查暱稱是否使用過
-func (u *User) IsNicknameUsed() bool {
+func (u *User) IsNicknameUsed() (bool, error) {
 	var count int64
-	driver.MySql.Table(u.TableName()).Where("nickname", u.Nickname).Count(&count)
+	err := driver.MySql.Table(u.TableName()).
+		Where("nickname", u.Nickname).
+		Count(&count).Error
 
-	return count != 0
+	return count != 0, err
 }
 
 // Create 建立會員資料

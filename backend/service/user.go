@@ -1,14 +1,13 @@
 package service
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/yuyuancha/website-quick-start/config"
 	"github.com/yuyuancha/website-quick-start/model"
 )
 
 // Register 註冊會員
-func Register(ctx *gin.Context, data model.UserRegisterData) error {
+func Register(ctx *gin.Context, data model.UserRegisterData) string {
 	var user = model.User{
 		Username: data.Username,
 		Nickname: data.Nickname,
@@ -16,12 +15,12 @@ func Register(ctx *gin.Context, data model.UserRegisterData) error {
 		Email:    data.Email,
 	}
 
-	if err := validateUserRegisterData(user); err != nil {
-		return err
+	if errorName := validateUserRegisterData(user); errorName != "" {
+		return errorName
 	}
 
 	if err := user.Create(); err != nil {
-		return err
+		return "UNKNOWN"
 	}
 
 	var userLog = model.UserLog{
@@ -32,18 +31,24 @@ func Register(ctx *gin.Context, data model.UserRegisterData) error {
 
 	_ = userLog.Create()
 
-	return nil
+	return ""
 }
 
 // validateUserRegisterData 驗證會員註冊資料
-func validateUserRegisterData(user model.User) error {
-	if user.IsExist() {
-		return errors.New("會員帳號已存在")
+func validateUserRegisterData(user model.User) string {
+	isExist, err := user.IsExist()
+	if err != nil {
+		return "UNKNOWN"
+	} else if isExist {
+		return "USERNAME_EXIST"
 	}
 
-	if user.IsNicknameUsed() {
-		return errors.New("會員暱稱已被使用")
+	isUsed, nicknameErr := user.IsNicknameUsed()
+	if nicknameErr != nil {
+		return "UNKNOWN"
+	} else if isUsed {
+		return "NICKNAME_USED"
 	}
 
-	return nil
+	return ""
 }
