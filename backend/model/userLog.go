@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"github.com/yuyuancha/website-quick-start/driver"
+	"time"
+)
 
 // UserLog 會員紀錄
 type UserLog struct {
@@ -16,4 +19,14 @@ type UserLog struct {
 
 func (*UserLog) TableName() string {
 	return "user_logs"
+}
+
+// Create 建立會員紀錄
+func (u *UserLog) Create() error {
+	err := driver.MySql.Create(u).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
